@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Current Weather</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+  <!-- Animated rain canvas -->
+  <canvas id="rain-canvas"></canvas>
+
+  <!-- Noise overlay -->
+  <div class="noise"></div>
+
+  <main>
+    <!-- ── Header ─────────────────────────────────── -->
+    <header>
+      <div class="eyebrow">Powered by WeatherAPI</div>
+      <h1>
+        <span class="title-will">Current</span>
+        <span class="title-it">Weather</span>
+        <span class="title-rain"></span>
+        <span class="title-tomorrow"></span>
+      </h1>
+      <p class="subtitle">Enter any city in the world and get the current weather instantly.</p>
+    </header>
+
+    <!-- ── Search form ────────────────────────────── -->
+    <section class="search-section">
+      <form action="/check" method="POST" class="search-form">
+        <div class="input-wrap">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            type="text"
+            name="city"
+            id="city"
+            placeholder="Try "Mumbai", "London, GB", "New York"…"
+            value="<%= query %>"
+            autocomplete="off"
+            spellcheck="false"
+            required
+          />
+        </div>
+        <button type="submit" class="btn-check">
+          <span>Check</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+      </form>
+    </section>
+
+    <!-- ── Error ─────────────────────────────────── -->
+    <% if (error) { %>
+    <div class="alert">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <%= error %>
+    </div>
+    <% } %>
+
+    <!-- ── Result card ────────────────────────────── -->
+    <% if (result) { %>
+    <section class="result-section">
+
+      <!-- weather display -->
+      <div class="weather-display">
+        <div class="city-name"><%= result.city %></div>
+        <div class="temperature"><%= result.temp %>°C</div>
+        <div class="condition"><%= result.condition %></div>
+      </div>
+
+    </section>
+    <% } %>
+
+    <!-- ── Footer ─────────────────────────────────── -->
+    <footer>
+      <p>Built with <strong>Express.js</strong> + <strong>Axios</strong> · Data from <strong>WeatherAPI</strong></p>
+      <p class="byline">~ By Aarna</p>
+    </footer>
+  </main>
+
+  <!-- Theme toggle -->
+  <button class="theme-toggle" id="themeToggle" title="Toggle purple mode" aria-label="Toggle purple mode">
+    <span class="toggle-dot"></span>
+  </button>
+
+  <script src="/js/rain.js"></script>
+  <script>
+    const btn = document.getElementById('themeToggle');
+    const saved = localStorage.getItem('theme');
+    if (saved === 'purple') document.documentElement.setAttribute('data-theme', 'purple');
+    btn.addEventListener('click', () => {
+      const isPurple = document.documentElement.getAttribute('data-theme') === 'purple';
+      document.documentElement.setAttribute('data-theme', isPurple ? '' : 'purple');
+      localStorage.setItem('theme', isPurple ? '' : 'purple');
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+/* ── Variables ───────────────────────────────────────────────────────────── */
+:root {
+  --bg:       #0b0f14;
+  --surface:  #111820;
+  --border:   rgba(255,255,255,0.07);
+  --text:     #e8edf2;
+  --muted:    #6b7a8d;
+  --accent:   #4fc3f7;       /* sky blue */
+
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+}
+
+/* ── Reset ───────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-weight: 300;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Canvas rain ─────────────────────────────────────────────────────────── */
+#rain-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.18;
+}
+
+/* ── Noise ───────────────────────────────────────────────────────────────── */
+.noise {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 200px;
+  opacity: 0.4;
+}
+
+/* ── Main layout ─────────────────────────────────────────────────────────── */
+main {
+  position: relative;
+  z-index: 2;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 12vw, 8rem);
+  line-height: 0.88;
+  letter-spacing: 0.02em;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15em;
+}
+
+.title-will    { color: var(--text); }
+.title-it      { color: var(--accent); }
+
+.subtitle {
+  margin-top: 1.2rem;
+  font-size: 1rem;
+  color: var(--muted);
+  font-weight: 300;
+  letter-spacing: 0.01em;
+}
+
+/* ── Search form ─────────────────────────────────────────────────────────── */
+.search-section { width: 100%; }
+
+.search-form {
+  display: flex;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.input-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  width: 1.1rem;
+  color: var(--muted);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+input[type="text"] {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 400;
+  padding: 0.9rem 1rem 0.9rem 2.8rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="text"]::placeholder { color: var(--muted); font-weight: 300; }
+
+input[type="text"]:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79,195,247,0.12);
+}
+
+.btn-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--accent);
+  color: #0b0f14;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.9rem 1.6rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.btn-check svg { width: 1rem; transition: transform 0.2s; }
+.btn-check:hover { background: #81d4fa; }
+.btn-check:hover svg { transform: translateX(3px); }
+.btn-check:active { transform: scale(0.97); }
+
+/* ── Alert ───────────────────────────────────────────────────────────────── */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 6px;
+  color: #fca5a5;
+  font-size: 0.9rem;
+  padding: 0.9rem 1.1rem;
+}
+.alert svg { width: 1.1rem; flex-shrink: 0; }
+
+/* ── Result card ─────────────────────────────────────────────────────────── */
+.result-section {
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 2rem;
+  animation: fadeUp 0.5s ease both;
+  background: var(--surface);
+}
+
+.weather-display {
+  text-align: center;
+}
+
+.city-name {
+  font-size: 2rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.temperature {
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+
+.condition {
+  font-size: 1.5rem;
+  color: var(--muted);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
+
+
+
+
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+footer {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+footer strong { color: var(--accent); font-weight: 500; }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 520px) {
+  .search-form   { flex-direction: column; }
+  .stats-grid    { grid-template-columns: repeat(2,1fr); }
+  .verdict-yes,
+  .verdict-no    { font-size: 2.8rem; }
+  .verdict-icon  { width: 54px; height: 54px; }
+}
