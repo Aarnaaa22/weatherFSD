@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Current Weather</title>
+  <title>Will It Rain Tomorrow?</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link
     href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
@@ -15,21 +15,26 @@
 
   <!-- Animated rain canvas -->
   <canvas id="rain-canvas"></canvas>
-
-  <!-- Noise overlay -->
   <div class="noise"></div>
 
+  <!-- Theme toggle -->
+  <button class="theme-toggle" id="themeToggle" title="Toggle purple mode" aria-label="Toggle purple mode">
+    <div class="toggle-track"><span class="toggle-dot"></span></div>
+    <span class="toggle-label">Purple</span>
+  </button>
+
   <main>
+
     <!-- ── Header ─────────────────────────────────── -->
     <header>
-      <div class="eyebrow">Powered by WeatherAPI</div>
+      <div class="eyebrow">Powered by OpenWeatherMap</div>
       <h1>
-        <span class="title-will">Current</span>
-        <span class="title-it">Weather</span>
-        <span class="title-rain"></span>
-        <span class="title-tomorrow"></span>
+        <span class="title-will">Will</span>
+        <span class="title-it">it</span>
+        <span class="title-rain">Rain</span>
+        <span class="title-tomorrow">Tomorrow?</span>
       </h1>
-      <p class="subtitle">Enter any city in the world and get the current weather instantly.</p>
+      <p class="subtitle">Enter any city in the world and find out instantly.</p>
     </header>
 
     <!-- ── Search form ────────────────────────────── -->
@@ -43,7 +48,7 @@
             type="text"
             name="city"
             id="city"
-            placeholder="Try "Mumbai", "London, GB", "New York"…"
+            placeholder='Try "Mumbai", "London, GB", "New York"…'
             value="<%= query %>"
             autocomplete="off"
             spellcheck="false"
@@ -64,7 +69,9 @@
     <% if (error) { %>
     <div class="alert">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
       </svg>
       <%= error %>
     </div>
@@ -72,38 +79,126 @@
 
     <!-- ── Result card ────────────────────────────── -->
     <% if (result) { %>
-    <section class="result-section">
+    <section class="result-section <%- result.willRain ? 'rain' : 'clear' %>">
 
-      <!-- weather display -->
-      <div class="weather-display">
-        <div class="city-name"><%= result.city %></div>
-        <div class="temperature"><%= result.temp %>°C</div>
-        <div class="condition"><%= result.condition %></div>
+      <!-- verdict -->
+      <div class="verdict">
+        <% if (result.willRain) { %>
+          <div class="verdict-icon rain-icon">
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="32" cy="22" rx="18" ry="13" fill="currentColor" opacity=".9"/>
+              <ellipse cx="20" cy="26" rx="10" ry="8" fill="currentColor" opacity=".7"/>
+              <ellipse cx="44" cy="26" rx="10" ry="8" fill="currentColor" opacity=".7"/>
+              <line x1="24" y1="40" x2="20" y2="52" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              <line x1="32" y1="40" x2="28" y2="52" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              <line x1="40" y1="40" x2="36" y2="52" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="verdict-text">
+            <span class="verdict-yes">YES</span>
+            <span class="verdict-label">Rain expected in</span>
+            <span class="verdict-city"><%= result.location %></span>
+          </div>
+        <% } else { %>
+          <div class="verdict-icon sun-icon">
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="32" cy="32" r="12" fill="currentColor"/>
+              <% for(let i=0;i<8;i++) { %>
+              <line x1="32" y1="8" x2="32" y2="14"
+                stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                transform="rotate(<%= i*45 %> 32 32)"/>
+              <% } %>
+            </svg>
+          </div>
+          <div class="verdict-text">
+            <span class="verdict-no">NO</span>
+            <span class="verdict-label">Rain unlikely in</span>
+            <span class="verdict-city"><%= result.location %></span>
+          </div>
+        <% } %>
       </div>
 
+      <!-- stats grid -->
+      <div class="stats-grid">
+        <div class="stat">
+          <div class="stat-value"><%= result.maxPop %><span class="stat-unit">%</span></div>
+          <div class="stat-label">Rain Probability</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value"><%= result.totalRainMm %><span class="stat-unit">mm</span></div>
+          <div class="stat-label">Expected Rainfall</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">
+            <%= result.temps.min %>°<span class="stat-unit sep">/</span><%= result.temps.max %>°<span class="stat-unit">C</span>
+          </div>
+          <div class="stat-label">Min / Max Temp</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value"><%= result.humidity %><span class="stat-unit">%</span></div>
+          <div class="stat-label">Avg Humidity</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value"><%= result.windSpeed %><span class="stat-unit">m/s</span></div>
+          <div class="stat-label">Wind Speed</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value intensity-<%= result.intensity %>">
+            <%= result.intensity.charAt(0).toUpperCase() + result.intensity.slice(1) %>
+          </div>
+          <div class="stat-label">Rain Intensity</div>
+        </div>
+      </div>
+
+      <!-- conditions -->
+      <% if (result.conditions.length > 0) { %>
+      <div class="conditions">
+        <span class="conditions-label">Conditions:</span>
+        <% result.conditions.forEach(c => { %>
+        <span class="tag"><%= c %></span>
+        <% }) %>
+      </div>
+      <% } %>
+
+      <!-- advice -->
+      <div class="advice">
+        <% if (result.willRain) { %>
+          <% if (result.intensity === 'heavy') { %>
+            ⛈ Heavy rain forecast. Keep your umbrella handy and consider indoor plans.
+          <% } else if (result.intensity === 'moderate') { %>
+            🌧 Moderate rain expected. Pack an umbrella just in case.
+          <% } else { %>
+            🌦 Light rain possible. A light jacket should do the trick.
+          <% } %>
+        <% } else { %>
+          ☀️ Looking clear! No rain expected tomorrow — enjoy the weather.
+        <% } %>
+      </div>
+
+      <div class="result-date">Forecast for <%= result.tomorrowStr %></div>
     </section>
     <% } %>
 
     <!-- ── Footer ─────────────────────────────────── -->
     <footer>
-      <p>Built with <strong>Express.js</strong> + <strong>Axios</strong> · Data from <strong>WeatherAPI</strong></p>
-      <p class="byline">~ By Aarna</p>
+      <p class="footer-stack">
+        Built with <strong>Express.js</strong> + <strong>Axios</strong> · Data from <strong>OpenWeatherMap</strong>
+      </p>
+      <span class="byline">By Aarna</span>
     </footer>
-  </main>
 
-  <!-- Theme toggle -->
-  <button class="theme-toggle" id="themeToggle" title="Toggle purple mode" aria-label="Toggle purple mode">
-    <span class="toggle-dot"></span>
-  </button>
+  </main>
 
   <script src="/js/rain.js"></script>
   <script>
-    const btn = document.getElementById('themeToggle');
+    const btn   = document.getElementById('themeToggle');
+    const root  = document.documentElement;
     const saved = localStorage.getItem('theme');
-    if (saved === 'purple') document.documentElement.setAttribute('data-theme', 'purple');
+    if (saved === 'purple') root.setAttribute('data-theme', 'purple');
+
     btn.addEventListener('click', () => {
-      const isPurple = document.documentElement.getAttribute('data-theme') === 'purple';
-      document.documentElement.setAttribute('data-theme', isPurple ? '' : 'purple');
+      const isPurple = root.getAttribute('data-theme') === 'purple';
+      root.setAttribute('data-theme', isPurple ? '' : 'purple');
       localStorage.setItem('theme', isPurple ? '' : 'purple');
     });
   </script>
