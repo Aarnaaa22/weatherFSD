@@ -21,7 +21,7 @@ app.use(express.json());
 
 // ── WeatherAPI config ─────────────────────────────────────────────────────
 const WEATHER_API_KEY = process.env.WEATHER_API_KEY || "DEMO_KEY";
-const CURRENT_URL = "http://api.weatherapi.com/v1/current.json";
+const FORECAST_URL = "http://api.weatherapi.com/v1/forecast.json";
 
 
 
@@ -41,17 +41,67 @@ app.post("/check", async (req, res) => {
   }
 
   try {
-    const response = await axios.get(CURRENT_URL, {
-      params: { key: WEATHER_API_KEY, q: encodeURIComponent(city.trim()) },
+    const response = await axios.get(FORECAST_URL, {
+      params: {
+        key: WEATHER_API_KEY,
+        q: city.trim(),
+        days: 2,
+        aqi: "no",
+        alerts: "no",
+      },
     });
 
-    const { location, current } = response.data;
-    const cityName = location.name;
-    const temp = current.temp_c;
-    const condition = current.condition.text;
+    const { location, forecast } = response.data;
+    const tomorrowForecast = forecast?.forecastday?.[1];
+
+    if (!tomorrowForecast) {
+      throw new Error("Forecast data for tomorrow is unavailable.");
+    }
+
+    const day = tomorrowForecast.day;
+    const maxPop = Number(day.daily_chance_of_rain ?? 0);
+    const totalRainMm = Number(day.totalprecip_mm ?? 0);
+    const conditionText = day.condition.text;
+    const willRain = maxPop > 30 || /rain|shower|storm/i.test(conditionText);
+    const intensity = willRain
+      ? totalRainMm >= 15 || maxPop >= 80
+        ? "heavy"
+        : totalRainMm >= 5 || maxPop >= 40
+        ? "moderate"
+        : "light"
+      : "none";
+
+    const conditions = [];
+    if (/rain|shower|storm/i.test(conditionText)) conditions.push("Rain");
+    if (/cloud/i.test(conditionText)) conditions.push("Cloudy");
+    if (/clear|sunny/i.test(conditionText)) conditions.push("Clear");
+    if (/snow|sleet|ice/i.test(conditionText)) conditions.push("Snow");
+    if (/fog|mist|haze|smoke/i.test(conditionText)) conditions.push("Foggy");
+    if (conditions.length === 0) conditions.push(conditionText);
+
+    const locationName = `${location.name}${location.region ? `, ${location.region}` : ""}`;
+    const tomorrowStr = new Date(tomorrowForecast.date).toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+    });
 
     return res.render("index", {
-      result: { city: cityName, temp, condition },
+      result: {
+        location: locationName,
+        willRain,
+        maxPop,
+        totalRainMm,
+        temps: {
+          min: Math.round(day.mintemp_c),
+          max: Math.round(day.maxtemp_c),
+        },
+        humidity: Math.round(day.avghumidity),
+        windSpeed: Number((day.maxwind_kph / 3.6).toFixed(1)),
+        intensity,
+        conditions,
+        tomorrowStr,
+      },
       error: null,
       query: city,
     });
